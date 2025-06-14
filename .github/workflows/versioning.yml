@@ -1,0 +1,146 @@
+name: Repo Semantic Versioning
+
+permissions: read-all
+
+on:
+  push:
+    branches: ["main"]
+#  DO NOT USE INPUTS ON Public REPO
+#  workflow_dispatch:
+#    inputs:
+#      module:
+#        description: 'Module to release'
+#        required: true
+#        type: choice
+#        options:
+#          - app
+#          - base
+#          - data
+#        default: 'app'
+#      version_type:
+#        description: 'Version type to release'
+#        required: true
+#        type: choice
+#        options:
+#          - major
+#          - minor
+#          - patch
+#        default: 'patch'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Create dummy commit for manual bump
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          case "${{ github.event.inputs.module }}" in
+            app)
+              case "${{ github.event.inputs.version_type }}" in
+                major)
+                  git commit --allow-empty -m "(MAJOR-APP) Manual version bump"
+                  ;;
+                minor)
+                  git commit --allow-empty -m "(MINOR-APP) Manual version bump"
+                  ;;
+                patch)
+                  git commit --allow-empty -m "Manual patch version bump"
+                  ;;
+              esac
+              ;;
+            base)
+              case "${{ github.event.inputs.version_type }}" in
+                major)
+                  git commit --allow-empty -m "(MAJOR-BASE) Manual version bump"
+                  ;;
+                minor)
+                  git commit --allow-empty -m "(MINOR-BASE) Manual version bump"
+                  ;;
+                patch)
+                  git commit --allow-empty -m "Manual patch version bump"
+                  ;;
+              esac
+              ;;
+            data)
+              case "${{ github.event.inputs.version_type }}" in
+                major)
+                  git commit --allow-empty -m "(MAJOR-DATA) Manual version bump"
+                  ;;
+                minor)
+                  git commit --allow-empty -m "(MINOR-DATA) Manual version bump"
+                  ;;
+                patch)
+                  git commit --allow-empty -m "Manual patch version bump"
+                  ;;
+              esac
+              ;;
+          esac
+
+      - name: Application Version
+        id: app-version
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          tag_prefix: "v"
+          major_pattern: "(MAJOR-APP)"
+          minor_pattern: "(MINOR-APP)"
+          version_format: "${major}.${minor}.${patch}"
+          bump_each_commit: false
+          search_commit_body: true
+          user_format_type: json
+          change_path: "modules/application-layer"
+          namespace: app
+
+      - name: Base Version
+        id: base-version
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          tag_prefix: "v"
+          major_pattern: "(MAJOR-BASE)"
+          minor_pattern: "(MINOR-BASE)"
+          version_format: "${major}.${minor}.${patch}"
+          bump_each_commit: false
+          search_commit_body: true
+          user_format_type: json
+          change_path: "modules/base-layer"
+          namespace: base
+
+      - name: Data Version
+        id: data-version
+        uses: paulhatch/semantic-version@v5.4.0
+        with:
+          tag_prefix: "v"
+          major_pattern: "(MAJOR-DATA)"
+          minor_pattern: "(MINOR-DATA)"
+          version_format: "${major}.${minor}.${patch}"
+          bump_each_commit: false
+          search_commit_body: true
+          user_format_type: json
+          change_path: "modules/data-layer"
+          namespace: data
+
+      - name: Create App Release
+        if: steps.app-version.outputs.new_release_published == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          omitBody: true
+          tag: "${{ steps.app-version.outputs.version_tag }}"
+
+      - name: Create Base Release
+        if: steps.base-version.outputs.new_release_published == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          omitBody: true
+          tag: "${{ steps.base-version.outputs.version_tag }}"
+
+      - name: Create Data Release
+        if: steps.data-version.outputs.new_release_published == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          omitBody: true
+          tag: "${{ steps.data-version.outputs.version_tag }}"

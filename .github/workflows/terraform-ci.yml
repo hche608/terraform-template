@@ -1,0 +1,37 @@
+name: Terraform CI
+
+permissions: read-all
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  terraform-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v3
+
+      # Install Terraform
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Install TFLint
+      - uses: terraform-linters/setup-tflint@v4
+        name: Setup TFLint
+        with:
+          tflint_version: latest
+
+      - name: Run Trivy scanner without cache
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          cache: 'false'
+
+      - uses: pre-commit/action@v3.0.1
+        env:
+          SKIP: no-commit-to-branch
