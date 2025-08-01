@@ -6,25 +6,14 @@ on:
       - main
 
 jobs:
-  set-vars:
-    runs-on: ubuntu-latest
-    outputs:
-      owner: ${{ steps.set-vars.outputs.owner }}
-      repo: ${{ steps.set-vars.outputs.repo }}
-    steps:
-      - name: Set owner and repo variables
-        id: set-vars
-        run: |
-          echo "owner=${{ github.repository_owner }}" >> $GITHUB_OUTPUT
-          echo "repo=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
   call-autoupdate:
     permissions:
       pull-requests: write
-      contents: read
+      contents: write
     uses: hche608/github-workflows/.github/workflows/pr-update.yml@main
     with:
-      owner: ${{ needs.set-vars.outputs.owner }}
-      repo: ${{ needs.set-vars.outputs.repo }}
+      owner: ${{ github.repository_owner }}
+      repo: ${{ github.event.repository.name }}
     secrets:
       GH_APP_ID: ${{ secrets.GH_APP_ID }}
       GH_APP_PRIVATE_KEY: ${{ secrets.GH_APP_PRIVATE_KEY }}
