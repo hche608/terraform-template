@@ -7,4 +7,4 @@ on:
 
 jobs:
   call-autoupdate:
-  uses: hche608/github-workflows/.github/workflows/pr-update.yml@main
+    uses: hche608/github-workflows/.github/workflows/pr-update.yml@main
