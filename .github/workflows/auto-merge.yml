@@ -1,0 +1,10 @@
+name: enable-auto-merge
+
+on:
+  pull_request:
+
+jobs:
+  call-automerge:
+    uses: hche608/github-workflows/.github/workflows/auto-merge.yml@main
+    with:
+      pull_number: ${{ github.event.pull_request.number }}
