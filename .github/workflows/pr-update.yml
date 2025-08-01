@@ -1,0 +1,13 @@
+name: autoupdate
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  call-autoupdate:
+    permissions:
+      pull-requests: write
+      contents: write
+    uses: hche608/github-workflows/.github/workflows/pr-update.yml@main
